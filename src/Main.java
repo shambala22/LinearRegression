@@ -10,24 +10,60 @@ public class Main {
     public static double ALPHA = 0.0001;
     void run() {
         ArrayList<Flat> flats = new Reader().read("prices.txt");
-        double[][] X = new double[flats.size()][2];
-        double[] y = new double[flats.size()];
-        double[] initArg = {100, 100};
-        for (int i = 0; i< flats.size(); i++) {
-            Flat flat = flats.get(i);
-            X[i][0] = flat.area;
-            X[i][1] = flat.roomsCount;
-            y[i] = flat.price;
+        double[][] A = new double[3][3];
+        double[] f = new double[3];
+
+        A[0][0] = flats.size();
+        double allRooms = 0;
+        double allRooms2 = 0;
+        double allSpace = 0;
+        double allSpace2 = 0;
+        double allSpaceRooms = 0;
+        for (Flat flat : flats) {
+            allRooms+=flat.roomsCount;
+            allRooms2+=flat.roomsCount*flat.roomsCount;
+            allSpace+=flat.area;
+            allSpace2+=flat.area*flat.area;
+            allSpaceRooms+=flat.area*flat.roomsCount;
         }
-        Matrix xMatrix = new Matrix(X);
-        Matrix yMatrix = new Matrix(y, flats.size());
-        Matrix arg = new Matrix(initArg, 2);
-        for (int k = 0; k<47; k++) {
-            arg = arg.minus(derivative(xMatrix, yMatrix, arg).times(ALPHA));
+
+        A[0][1] = allRooms;
+        A[1][0] = allRooms;
+        A[0][2] = allSpace;
+        A[2][0] = allSpace;
+        A[1][1] = allRooms2;
+        A[2][2] = allSpace2;
+        A[1][2] = allSpaceRooms;
+        A[2][1] = allSpaceRooms;
+
+        for (int i = 0; i<3; i++) {
+            if (i == 0) {
+                for (Flat flat : flats) {
+                    f[i] += flat.price;
+                }
+            } else if (i == 1) {
+                for (Flat flat : flats) {
+                    f[i] += flat.price*flat.roomsCount;
+                }
+            } else if (i == 2) {
+                for (Flat flat : flats) {
+                    f[i] += flat.price*flat.price;
+                }
+            }
         }
+
+
+        Matrix AMatrix = new Matrix(A);
+        Matrix fMatrix = new Matrix(f, 3);
+        Matrix bMatrix = AMatrix.inverse().times(fMatrix);
+        double b0 = bMatrix.get(0,0);
+        double b1 = bMatrix.get(1,0);
+        double b2 = bMatrix.get(2,0);
+
+
         ArrayList<Flat> line = new ArrayList<>();
         for (double a = 0; a < 5000; a ++ ) {
-            line.add(new Flat(a, 3, 156*a));
+            line.add(new Flat(a, 3, (b2*a)/1000));
         }
         ArrayList<Flat> oneroom = new ArrayList<>();
         ArrayList<Flat> tworoom = new ArrayList<>();
