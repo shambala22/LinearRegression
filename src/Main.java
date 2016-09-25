@@ -1,6 +1,7 @@
 import Jama.Matrix;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by shambala on 25/09/16.
@@ -8,6 +9,11 @@ import java.util.ArrayList;
 public class Main {
 
     public static double ALPHA = 0.0001;
+
+    public static void main(String[] args) {
+        new Main().run();
+    }
+
     void run() {
         ArrayList<Flat> flats = new Reader().read("prices.txt");
         double[][] A = new double[3][3];
@@ -63,7 +69,7 @@ public class Main {
 
         ArrayList<Flat> line = new ArrayList<>();
         for (double a = 0; a < 5000; a ++ ) {
-            line.add(new Flat(a, 3, (b2*a)/1000));
+            line.add(new Flat(a, 3, (b0 + b1 * (new Random().nextInt(5)) + b2 * a) * ALPHA * 10));
         }
         ArrayList<Flat> oneroom = new ArrayList<>();
         ArrayList<Flat> tworoom = new ArrayList<>();
@@ -92,9 +98,5 @@ public class Main {
 
     Matrix derivative(Matrix X, Matrix y, Matrix arg) {
         return X.transpose().times(X.times(arg).minus(y));
-    }
-
-    public static void main(String[] args) {
-        new Main().run();
     }
 }
